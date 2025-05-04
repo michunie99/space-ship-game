@@ -1,7 +1,6 @@
-# Raylib-Quickstart
-A simple cross platform template for setting up a project with the bleeding edge raylib code.
-Works with C or C++.
-This is a fork used to learn the basics of Raylib.
+# Space-ship-game
+Simple 2D space ship game based on toutorial: https://www.youtube.com/watch?v=UoAsDlUwjy0&t=5343s
+The game is writen in C instead of Python that is used in the toutorial.
 
 ## Supported Platforms
 Quickstart supports the main 3 desktop platforms:
