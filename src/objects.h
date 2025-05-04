@@ -34,6 +34,7 @@ typedef struct Object {
     void (*Update)(ObjectList* objList, struct Object* self, float dt);
     void (*Draw)(struct Object* self);
     void (*Clean)(struct Object* self);
+	// Add validate function
 } Object;
 
 

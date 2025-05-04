@@ -35,6 +35,7 @@ int main ()
 		UpdateObjects(objList, dt);
 		BeginDrawing();
 		DrawObjects(objList);
+		printf("objects: %d\n", objList->count);
 		ClearBackground(BACKGROUND_COLOR);
 		EndDrawing();
 	}

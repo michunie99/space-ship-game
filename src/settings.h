@@ -3,8 +3,8 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-static const int SCREEN_WIDTH = 1920;
-static const int SCREEN_HEIGHT = 1080;
+static const int SCREEN_WIDTH = 1920/2;
+static const int SCREEN_HEIGHT = 1080/2;
 
 static const int PLAYER_SPEED = 500;
 static const int LASER_SPEED = 600;

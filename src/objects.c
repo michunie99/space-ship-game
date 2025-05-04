@@ -3,6 +3,7 @@
 #include "raymath.h"
 #include "objects.h"
 #include "settings.h"
+#include <stdio.h>
 
 
 void InitObjectList(ObjectList* objList) {
@@ -28,14 +29,20 @@ void RegisterObject(ObjectList* objList, Object* obj) {
 
 void UnregisterObject(ObjectList* objList, Object* obj) {
 	if (objList->head == obj) {
-		objList->head = obj->next;		
+		objList->head = obj->next;
+		obj->next->prev = NULL;		
 	} else if (objList->tail == obj) {
 		objList->tail = obj->prev;
+		obj->prev->next = NULL;
 	} else {
 		Object* prev = obj->prev;
 		Object* next = obj->next;
-		prev->next=next;
-		next->prev=prev;
+		if (prev) {
+			prev->next=next;
+		}
+		if (next) {
+			next->prev=prev;
+		} 
 	}
 	obj->Clean(obj);
 	objList->count--;
@@ -52,8 +59,9 @@ void DrawObjects(ObjectList* objList) {
 void UpdateObjects(ObjectList* objList, float dt) {
 	Object* obj = objList->head;
 	while (obj) {
+		Object* next = obj->next;
 		obj->Update(objList, obj, dt);
-		obj = obj->next;		
+		obj = next;
 	}
 }
 
@@ -79,9 +87,14 @@ void CleanObjects(ObjectList* objList) {
 
 void UpdatePlayer(ObjectList* objList, Object* player, float dt) {
 	if (IsKeyPressed(KEY_SPACE)) {
+		Vector2 laserPos = player->position;
+		laserPos = Vector2Add(
+			laserPos, 
+			(Vector2){player->texture.width/2-5, -50}
+		);
 		InitLaser(
 			objList,
-			player->position
+			laserPos
 		);
 	}
 	player->direction.x =  (int) IsKeyDown(KEY_D) - (int) IsKeyDown(KEY_A);
@@ -108,6 +121,13 @@ void CleanPlayer(Object* player) {
 void UpdateLaser(ObjectList* objList, Object* laser, float dt) {
 	laser->direction = Vector2Normalize(laser->direction);
 	laser->position = Vector2Add(laser->position, Vector2Scale(laser->direction, dt*laser->speed));	
+
+	if (laser->position.x < -laser->texture.width || 
+		laser->position.x > SCREEN_WIDTH+laser->texture.width || 
+		laser->position.y < -laser->texture.height
+	) {
+		UnregisterObject(objList, laser);
+	}
 }
 
 void DrawLaser(Object* laser) {
