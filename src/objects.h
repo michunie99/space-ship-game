@@ -4,30 +4,54 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#define MAX_LASERS 100
+#define MAX_ASTEROIDS 100
 
-typedef struct {
-	Vector2 pos;
-	Texture texture;
-	float rotation;
-	float scale;
-	Color tint;
-	bool visible;
-} Sprite;
+typedef enum {
+	PLAYER_TYPE,
+	LASER_TYPE,
+	ASTEROID_TYPE
+} ObjectType;
 
-typedef struct {
-	Vector2 startPos;
-	Vector2 currPos;
-	Vector2 direction;
-	float speed;
-	Sprite sprite;
-} Player;
+typedef struct ObjectList ObjectList;
 
-void InitPlayer(Player* p, Vector2 startPos, const char* texturePath);
-void UpdatePlayer(Player *p);
-void ResetPlayer(Player* p);
-void UnloadPlayer(Player* p);
+typedef struct Object {
+    ObjectType type;
+    Vector2 position;
+    Vector2 direction;
+    float speed;
+    bool active;
 
-void InitSprite(Sprite* s, Vector2 pos, const char* texturePath, float rotation, float scale, Color tint, bool visible);
-void RegisterSprite(Sprite* s);
-void DrawAllSprites();
+    Texture2D texture;
+    float rotation;
+    float scale;
+    Color tint;
+    bool visible;
+
+    struct Object* next;
+    struct Object* prev;
+
+    void (*Update)(ObjectList* objList, struct Object* self, float dt);
+    void (*Draw)(struct Object* self);
+    void (*Clean)(struct Object* self);
+} Object;
+
+
+struct ObjectList {
+	Object* head;
+	Object* tail;
+	int count;
+};
+
+void InitObjectList(ObjectList* objList);
+void RegisterObject(ObjectList* objList, Object* obj);
+void UnregisterObject(ObjectList* objList, Object* obj);
+void DrawObjects(ObjectList* objList);
+void UpdateObjects(ObjectList* objList, float dt);
+void CleanObjects(ObjectList* objList);
+
+void InitPlayer(ObjectList* objList, Vector2 startPos, float speed);
+void InitLaser(ObjectList* objList, Vector2 startPos);
+void InitAsteroid(ObjectList* objList);
+
 #endif

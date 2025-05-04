@@ -1,9 +1,8 @@
 /*
-Raylib example file.
-This is an example main file for a simple raylib project.
-Use this as a starting point or replace it with your code.
+Raylib space-ship-game
+This is my first game in raylib based on toutorial: https://www.youtube.com/watch?v=UoAsDlUwjy0&t=5343s
 
-by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit https://creativecommons.org/publicdomain/zero/1.0/
+by Michal Niedbala 
 
 */
 #include <stdlib.h>
@@ -12,32 +11,35 @@ by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit h
 #include "raylib.h"
 #include "raymath.h"
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
-// #include "objects.h"
-// #include "collisions.h"
-#include "timer.h"
-#include "animation.h"
 
+#include "settings.h"
+#include "timer.h"
+#include "objects.h"
 
 
 int main ()
 {
 	// Create the window and OpenGL context
-	InitWindow(1920, 1080, "Collisions");
+	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Space Ship Game");
 	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
 	SearchAndSetResourceDir("resources");
-	Animation animation;
-	InitAnimation(&animation, "animation", 0.5f);
+
+	float dt;
+	ObjectList* objList = (ObjectList*) malloc(sizeof(ObjectList));
+	InitObjectList(objList);
+	InitPlayer(objList, (Vector2) {SCREEN_WIDTH/2, SCREEN_HEIGHT-200}, PLAYER_SPEED);
 
 	while (!WindowShouldClose())		// run the loop untill the user presses ESCAPE or presses the Close button on the window
 	{
-		UpdateAnimationFrame(&animation, GetFrameTime());
+		dt = GetFrameTime();
+		UpdateObjects(objList, dt);
 		BeginDrawing();
-		DrawFrameAnimation(&animation, (Vector2){10, 10}, 0, 1, WHITE);
-		ClearBackground(BLACK);
+		DrawObjects(objList);
+		ClearBackground(BACKGROUND_COLOR);
 		EndDrawing();
 	}
 	// cleanup
-	CleanAnimation(&animation);
+	CleanObjects(objList);
 	CloseWindow();
 	return 0;
 }
