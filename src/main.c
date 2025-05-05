@@ -39,6 +39,9 @@ int main ()
 
 	while (!WindowShouldClose())		// run the loop untill the user presses ESCAPE or presses the Close button on the window
 	{
+		if (IsKeyPressed(KEY_H)) {
+			ToogleHitboxObjects(objList);
+		}
 		dt = GetFrameTime();
 		updateTimer(&asteroidTimer);
 		UpdateObjects(objList, dt);

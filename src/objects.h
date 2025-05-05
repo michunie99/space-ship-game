@@ -28,6 +28,9 @@ typedef struct Object {
     Color tint;
     bool visible;
 
+    Rectangle hitbox;
+    bool hitboxVisible;
+
     struct Object* next;
     struct Object* prev;
 
@@ -50,6 +53,7 @@ void UnregisterObject(ObjectList* objList, Object* obj);
 void DrawObjects(ObjectList* objList);
 void UpdateObjects(ObjectList* objList, float dt);
 void CleanObjects(ObjectList* objList);
+void ToogleHitboxObjects(ObjectList* objList);
 
 void InitPlayer(ObjectList* objList, Vector2 startPos, float speed);
 void InitLaser(ObjectList* objList, Vector2 startPos);
