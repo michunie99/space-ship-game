@@ -29,13 +29,21 @@ int main ()
 	InitObjectList(objList);
 	InitPlayer(objList, (Vector2) {SCREEN_WIDTH/2, SCREEN_HEIGHT-200}, PLAYER_SPEED);
 
+	// Prepare random numer genertor
+	unsigned int seed;
+	seed = arc4random();
+	srand(seed);
+
+	Timer asteroidTimer;
+	initTimer(&asteroidTimer, ASTEROID_TIMER_DURATION, true, true, CreateAsteroid, objList);
+
 	while (!WindowShouldClose())		// run the loop untill the user presses ESCAPE or presses the Close button on the window
 	{
 		dt = GetFrameTime();
+		updateTimer(&asteroidTimer);
 		UpdateObjects(objList, dt);
 		BeginDrawing();
 		DrawObjects(objList);
-		printf("objects: %d\n", objList->count);
 		ClearBackground(BACKGROUND_COLOR);
 		EndDrawing();
 	}

@@ -55,4 +55,6 @@ void InitPlayer(ObjectList* objList, Vector2 startPos, float speed);
 void InitLaser(ObjectList* objList, Vector2 startPos);
 void InitAsteroid(ObjectList* objList);
 
+void CreateAsteroid(void* data);
+
 #endif

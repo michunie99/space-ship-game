@@ -17,7 +17,7 @@ typedef struct {
 } Timer;
 
 
-Timer* initTimer(Timer* timer, double duration, bool repeat, bool autostart, funcCallback callback, void* data);
+void initTimer(Timer* timer, double duration, bool repeat, bool autostart, funcCallback callback, void* data);
 void activateTimer(Timer* timer);
 void deactivateTimer(Timer* timer);
 void updateTimer(Timer* timer);

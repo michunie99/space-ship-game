@@ -1,8 +1,12 @@
 #include "raylib.h"
 #include "timer.h"
 
-Timer* initTimer(Timer* timer, double duration, bool repeat, bool autostart, funcCallback callback, void* data) {
-    if (duration < 0) {return NULL;}
+#include <stdlib.h>
+
+void initTimer(Timer* timer, double duration, bool repeat, bool autostart, funcCallback callback, void* data) {
+    if (duration < 0) {
+        exit(EXIT_FAILURE);
+    }
     timer->duration = duration;
     timer->startTime = 0.0;
     timer->active = false;
@@ -12,7 +16,6 @@ Timer* initTimer(Timer* timer, double duration, bool repeat, bool autostart, fun
     if (autostart) {
         activateTimer(timer);
     }
-    return timer;
 }
 
 void activateTimer(Timer* timer) {

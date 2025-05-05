@@ -3,6 +3,8 @@
 #include "raymath.h"
 #include "objects.h"
 #include "settings.h"
+
+#include <stdlib.h>
 #include <stdio.h>
 
 
@@ -145,46 +147,32 @@ void CleanLaser(Object* laser) {
 	free(laser);
 }
 
-// void InitObject(
-// 	Object* obj, 
-// 	ObjectType type, 
-// 	Vector2 startPos, 
-// 	Vector2 direction, 
-// 	float speed,
-// 	bool active
-// ) {
-// 	switch (type) {
-// 		case PLAYER_TYPE:
-// 		obj->texture = LoadTexture("images/spaceship.png");
-// 		obj->rotation = 0.0f;
-// 		obj->scale = 1.0f;
-// 		obj->tint = WHITE;
-// 		obj->Update = UpdatePlayer;
-// 		obj->Draw = DrawPlayer;
-// 		obj->Clean = CleanPlayer;
-// 		break;
-// 		case LASER_TYPE:
-// 		obj->texture = LoadTexture("images/laser.png");
-// 		obj->rotation = 0.0f;
-// 		obj->scale = 1.0f;
-// 		obj->tint = WHITE;
-// 		obj->Update = UpdateLaser;
-// 		obj->Draw = DrawLaser;
-// 		obj->Clean = CleanLaser;
-// 		break;
-// 		case ASTEROID_TYPE:
-// 		break;
-// 		default:
-// 	}
-// 	obj->visible = true;
+void UpdateAsteriod(ObjectList* objList, Object* asteroid, float dt) {
+	asteroid->direction = Vector2Normalize(asteroid->direction);
+	asteroid->position = Vector2Add(asteroid->position, Vector2Scale(asteroid->direction, dt*asteroid->speed));	
 
-// 	obj->type = type;
-// 	obj->position = startPos;
-// 	obj->direction = direction;
-// 	obj->speed = speed;
-// 	obj->active = active;
-// }
+	if (asteroid->position.x < -asteroid->texture.width || 
+		asteroid->position.x > SCREEN_WIDTH+asteroid->texture.width || 
+		asteroid->position.y > SCREEN_HEIGHT
+	) {
+		UnregisterObject(objList, asteroid);
+	}
+}
 
+void DrawAsteriod(Object* asteroid) {
+	DrawTextureEx(
+		asteroid->texture,
+		asteroid->position,
+		asteroid->rotation,
+		asteroid->scale,
+		WHITE
+	);
+}
+
+void CleanAsteriod(Object* asteroid) {
+	UnloadTexture(asteroid->texture);
+	free(asteroid);
+}
 
 void InitPlayer(ObjectList* objList, Vector2 startPos, float speed) {
 	Object* obj = (Object*) malloc(sizeof(Object));
@@ -230,24 +218,32 @@ void InitLaser(ObjectList* objList, Vector2 startPos) {
 	RegisterObject(objList, obj);	
 }
 
-// void InitLaser(SpriteList* sl, Laser* l, Vector2 startPos, float speed) {
-// 	l->startPos = startPos;
-// 	l->currPos = startPos;
-// 	l->direction = (Vector2){0, -1};
-// 	l->speed = speed;
-// 	InitSprite(sl, &l->sprite, l->currPos,  "images/laser.png", 0.0, 1.0, WHITE, true);
-// }
+void InitAsteroid(ObjectList* objList) {
+	Object* obj = (Object*) malloc(sizeof(Object));
+	Vector2 startPos = (Vector2) {rand() % SCREEN_WIDTH, -100};
+	float speed = ASTEROID_SPEED_RANGE[0] + (ASTEROID_SPEED_RANGE[1] - ASTEROID_SPEED_RANGE[0]) * (float) rand() / RAND_MAX;
+	*obj = (Object) {
+		.type = ASTEROID_TYPE,
+		.position = startPos,
+		.direction = (Vector2){0, 1},
+		.speed = speed,
+		.active = true,
+		.texture = LoadTexture("images/meteor.png"),
+		.rotation = 0.0,
+		.scale = 1.0,
+		.tint = WHITE,
+		.visible = true,
+		.next = NULL,
+		.prev = NULL,
+		.Update = UpdateAsteriod,
+		.Draw = DrawAsteriod,
+		.Clean = CleanAsteriod
+	};
+	RegisterObject(objList, obj);	
+	
+}
 
-// void UpdateLasers(Laser *l, float dt) {
-// 	l->direction.x =  (int) IsKeyDown(KEY_D) - (int) IsKeyDown(KEY_A);
-// 	l->direction.y =  (int) IsKeyDown(KEY_S) - (int) IsKeyDown(KEY_W);
-// 	l->direction = Vector2Normalize(l->direction);
-// 	l->currPos = Vector2Add(l->currPos, Vector2Scale(l->direction, dt*l->speed));	
-// 	l->sprite.pos = l->currPos;
-// }
-
-
-// void CleanLaser(SpriteList* sl , Laser* l) {
-// 	UnregisterSprite(sl, &l->sprite);
-// 	free(l);
-// }
+void CreateAsteroid(void* data) {
+	printf("Spawned asteroid");
+	InitAsteroid((ObjectList*) data);
+}
