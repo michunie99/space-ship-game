@@ -53,7 +53,9 @@ void UnregisterObject(ObjectList* objList, Object* obj);
 void DrawObjects(ObjectList* objList);
 void UpdateObjects(ObjectList* objList, float dt);
 void CleanObjects(ObjectList* objList);
-void ToogleHitboxObjects(ObjectList* objList);
+void ShowHitboxObjects(ObjectList* objList);
+void HideHitboxObjects(ObjectList* objList);
+
 
 void InitPlayer(ObjectList* objList, Vector2 startPos, float speed);
 void InitLaser(ObjectList* objList, Vector2 startPos);

@@ -76,10 +76,18 @@ void CleanObjects(ObjectList* objList) {
 }
 
 // TODO: change to disabl/exenable
-void ToogleHitboxObjects(ObjectList* objList) {
+void ShowHitboxObjects(ObjectList* objList) {
 	Object* obj = objList->head;
 	while (obj) {
-		obj->hitboxVisible=!obj->hitboxVisible;
+		obj->hitboxVisible=true;
+		obj = obj->next;		
+	}
+}
+
+void HideHitboxObjects(ObjectList* objList) {
+	Object* obj = objList->head;
+	while (obj) {
+		obj->hitboxVisible=false;
 		obj = obj->next;		
 	}
 }
@@ -106,6 +114,9 @@ void UpdatePlayer(ObjectList* objList, Object* player, float dt) {
 			objList,
 			laserPos
 		);
+		if (objList->tail) {
+			objList->tail->hitboxVisible = player->hitboxVisible;
+		}
 	}
 	player->direction.x =  (int) IsKeyDown(KEY_D) - (int) IsKeyDown(KEY_A);
 	player->direction.y =  (int) IsKeyDown(KEY_S) - (int) IsKeyDown(KEY_W);
@@ -276,6 +287,12 @@ void InitAsteroid(ObjectList* objList) {
 }
 
 void CreateAsteroid(void* data) {
-	printf("Spawned asteroid");
-	InitAsteroid((ObjectList*) data);
+	ObjectList* objList = (ObjectList*) data;
+	bool hitboxVisible = false;
+	if (objList->head) {
+		hitboxVisible = objList->head->hitboxVisible;
+	}
+	InitAsteroid(objList);
+	objList->tail->hitboxVisible = hitboxVisible;
+
 }
