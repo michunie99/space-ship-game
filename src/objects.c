@@ -53,7 +53,9 @@ void UnregisterObject(ObjectList* objList, Object* obj) {
 void DrawObjects(ObjectList* objList) {
 	Object* obj = objList->head;
 	while (obj) {
-		obj->Draw(obj);
+		if (obj->visible) {
+			obj->Draw(obj);
+		}
 		obj = obj->next;		
 	}
 }
@@ -62,7 +64,9 @@ void UpdateObjects(ObjectList* objList, float dt) {
 	Object* obj = objList->head;
 	while (obj) {
 		Object* next = obj->next;
-		obj->Update(objList, obj, dt);
+		if (obj->active) {
+			obj->Update(objList, obj, dt);
+		}
 		obj = next;
 	}
 }
@@ -145,6 +149,10 @@ void CleanPlayer(Object* player) {
 }
 
 void UpdateLaser(ObjectList* objList, Object* laser, float dt) {
+	if (laser->destroied) {
+		UnregisterObject(objList, laser);
+		return;
+	}
 	laser->direction = Vector2Normalize(laser->direction);
 	laser->position = Vector2Add(laser->position, Vector2Scale(laser->direction, dt*laser->speed));	
 	laser->hitbox.x = laser->position.x;
@@ -177,6 +185,17 @@ void CleanLaser(Object* laser) {
 }
 
 void UpdateAsteriod(ObjectList* objList, Object* asteroid, float dt) {
+	if (asteroid->destroied && !asteroid->animationActive) {
+		UnregisterObject(objList, asteroid);
+		return;
+	} else if (asteroid->animationActive) {
+		UpdateAnimationFrame(asteroid->animation, dt);
+		return;
+	}
+	// if (asteroid->destroied) {
+	// 	UnregisterObject(objList, asteroid);
+	// 	return;
+	// }
 	asteroid->direction = Vector2Normalize(asteroid->direction);
 	asteroid->position = Vector2Add(asteroid->position, Vector2Scale(asteroid->direction, dt*asteroid->speed));
 	asteroid->hitbox.x = asteroid->position.x;
@@ -191,13 +210,23 @@ void UpdateAsteriod(ObjectList* objList, Object* asteroid, float dt) {
 }
 
 void DrawAsteriod(Object* asteroid) {
-	DrawTextureEx(
-		asteroid->texture,
-		asteroid->position,
-		asteroid->rotation,
-		asteroid->scale,
-		WHITE
-	);
+	if (asteroid->animationActive) {
+		DrawFrameAnimation(
+			asteroid->animation,
+			Vector2Add(asteroid->position, (Vector2){20, 20}),
+			asteroid->rotation,
+			asteroid->scale,
+			WHITE
+		);
+	} else {
+		DrawTextureEx(
+			asteroid->texture,
+			asteroid->position,
+			asteroid->rotation,
+			asteroid->scale,
+			WHITE
+		);
+	}
 	if (asteroid->hitboxVisible) {
 		DrawRectangleLinesEx(asteroid->hitbox, 2, RED);
 	}
@@ -205,6 +234,7 @@ void DrawAsteriod(Object* asteroid) {
 
 void CleanAsteriod(Object* asteroid) {
 	UnloadTexture(asteroid->texture);
+	CleanAnimation(asteroid->animation);
 	free(asteroid);
 }
 
@@ -228,7 +258,10 @@ void InitPlayer(ObjectList* objList, Vector2 startPos, float speed) {
 		.Draw = DrawPlayer,
 		.Clean = CleanPlayer,
 		.hitbox = (Rectangle){startPos.x, startPos.y, texture.width, texture.height},
-		.hitboxVisible = false
+		.hitboxVisible = false,
+		.destroied = false,
+		.animation = NULL,
+		.animationActive = false
 	};
 	RegisterObject(objList, obj);	
 }
@@ -253,7 +286,10 @@ void InitLaser(ObjectList* objList, Vector2 startPos) {
 		.Draw = DrawLaser,
 		.Clean = CleanLaser,
 		.hitbox = (Rectangle){startPos.x, startPos.y, texture.width, texture.height},
-		.hitboxVisible = false
+		.hitboxVisible = false,
+		.destroied = false,
+		.animation = NULL,
+		.animationActive = false
 	};
 	RegisterObject(objList, obj);	
 }
@@ -263,6 +299,11 @@ void InitAsteroid(ObjectList* objList) {
 	Vector2 startPos = (Vector2) {rand() % SCREEN_WIDTH, -100};
 	float speed = ASTEROID_SPEED_RANGE[0] + (ASTEROID_SPEED_RANGE[1] - ASTEROID_SPEED_RANGE[0]) * (float) rand() / RAND_MAX;
 	Texture2D texture =  LoadTexture("images/meteor.png");
+
+	// Initialize Asteroid destoried animation
+	Animation* explosion = (Animation*) malloc(sizeof(Animation));
+	InitAnimation(explosion, "images/explosion", 0.4);
+
 	*obj = (Object) {
 		.type = ASTEROID_TYPE,
 		.position = startPos,
@@ -280,7 +321,10 @@ void InitAsteroid(ObjectList* objList) {
 		.Draw = DrawAsteriod,
 		.Clean = CleanAsteriod,
 		.hitbox = (Rectangle){startPos.x, startPos.y, texture.width, texture.height},
-		.hitboxVisible = false
+		.hitboxVisible = false,
+		.destroied = false,
+		.animation = explosion,
+		.animationActive = false
 	};
 	RegisterObject(objList, obj);	
 	
@@ -294,5 +338,4 @@ void CreateAsteroid(void* data) {
 	}
 	InitAsteroid(objList);
 	objList->tail->hitboxVisible = hitboxVisible;
-
 }

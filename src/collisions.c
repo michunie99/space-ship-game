@@ -1,48 +1,27 @@
 #include "collisions.h"
 #include <stdlib.h>
 
-const char levelMap[MAP_ROWS][MAP_COLS] = {
-    "1111111111111111111",
-    "1010000000000000001",
-    "1010000000001111111",
-    "1000000000000000111",
-    "1000000200000000011",
-    "1000000000000100001",
-    "1000000000000100001",
-    "1001100000000100001",
-    "1001100000000100001",
-    "1001100000000100001",
-    "1111111111111111111"	
-};
-Rectangle blocks[MAP_ROWS*MAP_COLS];
-int blockNum = 0;
+void resolveCollision(ObjectList* objList) {
+	if (objList->count <= 1) {return;}
+	Object* n1, *n2;
+	n1 = objList->head;
+	n2 = n1->next;
 
-void resolveCollision(Rectangle *player, Vector2 direction, const Axis axis) {
-	for (int i=0; i<MAP_ROWS*MAP_COLS; i++) {
-		if (CheckCollisionRecs(*player, blocks[i])) {
-			switch (axis) {
-				case 'x':
-					if (direction.x > 0) {player->x = blocks[i].x - player->width;} else if (direction.x < 0) {player->x = blocks[i].x + blocks[i].width;}
-					break;
-				case 'y':
-					if (direction.y > 0) {player->y = blocks[i].y - player->height;} else if (direction.y < 0) {player->y = blocks[i].y + blocks[i].height;}
-					break;
-				default:
-					exit(EXIT_FAILURE);
+	while (n1->next) {
+		while(n2->next) {
+			bool collision = CheckCollisionRecs(n1->hitbox, n2->hitbox);
+			if (collision && 
+				n1->type != n2->type &&
+				!n1->destroied && !n2->destroied 
+			) {
+				n1->destroied=true;
+				n2->destroied=true;
+				if (n1->type == ASTEROID_TYPE) {n1->animationActive=true;}
+				if (n2->type == ASTEROID_TYPE) {n2->animationActive=true;}
 			}
+			n2 = n2->next;
 		}
-	}
-}
-
-void initMap() {
-	for (int row=0; row<MAP_ROWS; row++){
-		for (int col=0; col<MAP_COLS; col++) {
-			if (levelMap[row][col] == '1') {
-				int x, y;
-				x = col* BLOCK_SIZE;
-				y = row * BLOCK_SIZE;
-				blocks[blockNum++] = (Rectangle){x,y, BLOCK_SIZE, BLOCK_SIZE};
-			}
-		}
+		n1 = n1->next;
+		n2 = n1->next;
 	}
 }

@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include "raylib.h"
+#include "animation.h"
 
 #ifndef PLAYER_H
 #define PLAYER_H
@@ -28,8 +29,12 @@ typedef struct Object {
     Color tint;
     bool visible;
 
+    Animation* animation;
+    bool animationActive;
+
     Rectangle hitbox;
     bool hitboxVisible;
+    bool destroied;
 
     struct Object* next;
     struct Object* prev;

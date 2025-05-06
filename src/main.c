@@ -15,6 +15,7 @@ by Michal Niedbala
 #include "settings.h"
 #include "timer.h"
 #include "objects.h"
+#include "collisions.h"
 
 
 int main ()
@@ -24,10 +25,14 @@ int main ()
 	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
 	SearchAndSetResourceDir("resources");
 
+	// Wrap to a function to allow restarts
+	Font font = LoadFont("font/Stormfaze.otf");
+
 	float dt;
 	ObjectList* objList = (ObjectList*) malloc(sizeof(ObjectList));
 	InitObjectList(objList);
 	InitPlayer(objList, (Vector2) {SCREEN_WIDTH/2, SCREEN_HEIGHT-200}, PLAYER_SPEED);
+	Object* player = objList->head;
 
 	// Prepare random numer genertor
 	unsigned int seed;
@@ -49,12 +54,21 @@ int main ()
 			}
 			hitBoxesVisible = !hitBoxesVisible;
 		}
+		resolveCollision(objList);
+
+
 		dt = GetFrameTime();
 		updateTimer(&asteroidTimer);
 		UpdateObjects(objList, dt);
 		BeginDrawing();
-		DrawObjects(objList);
-		ClearBackground(BACKGROUND_COLOR);
+		// Check if player alive
+		if (player->destroied) {
+			ClearBackground(BACKGROUND_COLOR);
+			DrawTextEx(font, "GAME OVER", (Vector2){SCREEN_WIDTH/2-(4*80), SCREEN_HEIGHT/2}, 80, 20, RED);
+		} else {
+			DrawObjects(objList);
+			ClearBackground(BACKGROUND_COLOR);
+		}
 		EndDrawing();
 	}
 	// cleanup
