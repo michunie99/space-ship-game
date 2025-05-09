@@ -1,7 +1,7 @@
 #include "animation.h"
 #include "stdlib.h"
 
-void InitAnimation(Animation* animation, const char* animationPath, const float delay) {
+void InitAnimation(Animation* animation, const char* animationPath, const float delay, bool repeat) {
 	if (!DirectoryExists(animationPath)) {
 		exit(EXIT_FAILURE);
 	}
@@ -17,13 +17,23 @@ void InitAnimation(Animation* animation, const char* animationPath, const float 
 	animation->numberOfFrames=frames.count;
 	animation->frameTime=0;
 	animation->delay=delay;
+	animation->repeat=repeat;
+	animation->finished=false;
 }
 
 void UpdateAnimationFrame(Animation* animation, const float dt) {
+	if (animation->finished) {return;}
 	animation->frameTime+=dt;
 	if (animation->frameTime >= animation->delay) {
 		animation->currentFrame++;
-		animation->currentFrame=animation->currentFrame % animation->numberOfFrames;
+		if (
+			!animation->repeat && 
+			animation->currentFrame >= animation->numberOfFrames
+		) {
+			animation->finished=true;
+		} else {
+			animation->currentFrame=animation->currentFrame % animation->numberOfFrames;
+		}
 		animation->frameTime = 0;
 	}
 }

@@ -9,7 +9,7 @@
 #define MAX_ASTEROIDS 100
 
 typedef enum {
-	PLAYER_TYPE,
+	PLAYER_TYPE = 0,
 	LASER_TYPE,
 	ASTEROID_TYPE
 } ObjectType;
@@ -32,6 +32,8 @@ typedef struct Object {
     Animation* animation;
     bool animationActive;
 
+    Sound soundEffect;
+
     Rectangle hitbox;
     bool hitboxVisible;
     bool destroied;
@@ -50,6 +52,7 @@ struct ObjectList {
 	Object* head;
 	Object* tail;
 	int count;
+    int score; // KINDA not nice but gets the work done
 };
 
 void InitObjectList(ObjectList* objList);
