@@ -11,6 +11,9 @@ static const int LASER_SPEED = 600;
 static const float ASTEROID_SPEED_RANGE[2] = {300.0, 400.0};
 static const float ASTEROID_TIMER_DURATION = 0.4;
 
-static const Color BACKGROUND_COLOR = GRAY;
+static const Color BACKGROUND_COLOR = (Color) {15, 10, 25, 255};
+static const float FONT_SIZE = 120;
+
+// static const float FONT_SPACING = 20;
 
 #endif

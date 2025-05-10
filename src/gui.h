@@ -5,6 +5,7 @@
 
 void DrawScore(Game* game);
 void DrawGameOver(Game* game);
-void DrawMenu(Game* game);
+void DrawPaused(Game* game);
+void DrawStars(Game* game);
 
 #endif

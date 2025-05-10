@@ -14,6 +14,7 @@ int main ()
 {
 	// Create the window and OpenGL context
 	InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Space Ship Game");
+	
 	InitAudioDevice();
 	SearchAndSetResourceDir("resources");
 	Game game;
