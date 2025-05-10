@@ -22,12 +22,12 @@ void resolveCollision(ObjectList* objList) {
 				if (n1->type == ASTEROID_TYPE) {
 					n1->animationActive=true; 
 					objList->score++; 
-					PlaySound(n1->soundEffect);
+					PlaySound(*n1->sound);
 				}
 				if (n2->type == ASTEROID_TYPE) {
 					n2->animationActive=true;
 					objList->score++;
-					PlaySound(n2->soundEffect);
+					PlaySound(*n2->sound);
 				}
 			}
 			n2 = n2->prev;

@@ -7,6 +7,8 @@
 
 #define MAX_LASERS 100
 #define MAX_ASTEROIDS 100
+#define NUMBER_OF_TYPES 5
+#define MAX_ANIMATION_LEN 20
 
 typedef enum {
 	PLAYER_TYPE = 0,
@@ -23,7 +25,7 @@ typedef struct Object {
     float speed;
     bool active;
 
-    Texture2D texture;
+    Texture2D* texture;
     float rotation;
     float scale;
     Color tint;
@@ -32,7 +34,7 @@ typedef struct Object {
     Animation* animation;
     bool animationActive;
 
-    Sound soundEffect;
+    Sound* sound;
 
     Rectangle hitbox;
     bool hitboxVisible;
@@ -53,6 +55,11 @@ struct ObjectList {
 	Object* tail;
 	int count;
     int score; // KINDA not nice but gets the work done
+
+    Texture2D textures[NUMBER_OF_TYPES];
+    Sound sounds[NUMBER_OF_TYPES];
+    Texture2D animation[MAX_ANIMATION_LEN];
+    int animationSize;
 };
 
 void InitObjectList(ObjectList* objList);

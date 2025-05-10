@@ -14,9 +14,8 @@ typedef struct {
 	bool finished;
 } Animation;
 
-void InitAnimation(Animation* animation, const char* animationPath, const float delay, bool repeat);
+void InitAnimation(Animation* animation, Texture2D* textures, int numberOfFrames, const float delay, bool repeat);
 void UpdateAnimationFrame(Animation* animation, const float dt);
 void DrawFrameAnimation(Animation* animation, Vector2 pos, float rotation, float scale, Color tint);
 void CleanAnimation(Animation* animation);
-
 #endif

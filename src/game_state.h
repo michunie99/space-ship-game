@@ -20,6 +20,13 @@ typedef enum {
 
 } GameStatus;
 
+
+typedef struct {
+    Vector2 position;
+    float rotation;
+    float scale;
+} Star;
+
 typedef struct {
     GameStatus gs;
     ObjectList* objList;
@@ -33,7 +40,8 @@ typedef struct {
     bool hitBoxesVisible;
     bool drawFps;
 
-    Vector2 stars[STARS_NUMBER];
+    Texture2D starTexture;
+    Star stars[STARS_NUMBER];
 } Game;
 
 

@@ -1,20 +1,10 @@
 #include "animation.h"
 #include "stdlib.h"
 
-void InitAnimation(Animation* animation, const char* animationPath, const float delay, bool repeat) {
-	if (!DirectoryExists(animationPath)) {
-		exit(EXIT_FAILURE);
-	}
-	FilePathList frames = LoadDirectoryFiles(animationPath);
-	animation->textures = (Texture2D*) malloc(frames.count*sizeof(Texture2D));
-	if (animation->textures == NULL) {
-		exit(EXIT_FAILURE);
-	}
-	for (int i = 0; i < frames.count; i++) {
-		animation->textures[i] = LoadTexture(frames.paths[i]);
-	}
+void InitAnimation(Animation* animation, Texture2D* textures, int numberOfFrames, const float delay, bool repeat) {
+	animation->textures = textures;
 	animation->currentFrame=0;
-	animation->numberOfFrames=frames.count;
+	animation->numberOfFrames=numberOfFrames;
 	animation->frameTime=0;
 	animation->delay=delay;
 	animation->repeat=repeat;
@@ -43,11 +33,8 @@ void DrawFrameAnimation(Animation* animation, Vector2 pos, float rotation, float
 }
 
 void CleanAnimation(Animation* animation) {
-	for (int i = 0; i < animation->numberOfFrames; i++) {
-		UnloadTexture(animation->textures[i]);
-	}
-	free(animation->textures);
 	animation->textures = NULL;
 	animation->currentFrame=0;
 	animation->numberOfFrames=0;
+	free(animation);
 }

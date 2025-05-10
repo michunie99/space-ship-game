@@ -3,6 +3,16 @@
 #include "collisions.h"
 #include "gui.h"
 
+#define max(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+
+#define min(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _b : _a; })
+
 void ResetGame(Game* game) {
     game->gs=ACTIVE;
     CleanObjects(game->objList);
@@ -31,10 +41,15 @@ void InitGame (Game* game) {
 	game->hitBoxesVisible = false;
 	initTimer(&game->timers[0], ASTEROID_TIMER_DURATION, true, true, CreateAsteroid, game->objList);
 
+    game->starTexture = LoadTexture("images/star.png");
     for (int i=0; i<STARS_NUMBER; i++) {
-        game->stars[i] = (Vector2) {
-            ((float) rand() / RAND_MAX) * SCREEN_WIDTH,
-            ((float) rand() / RAND_MAX) * SCREEN_HEIGHT
+        game->stars[i] = (Star) {
+            .position = (Vector2) {
+                ((float) rand() / RAND_MAX) * SCREEN_WIDTH,
+                ((float) rand() / RAND_MAX) * SCREEN_HEIGHT
+            },
+            .rotation = ((float) rand() / RAND_MAX) * PI,
+            .scale = max(0.5, ((float) rand() / RAND_MAX))
         };
     }
 }

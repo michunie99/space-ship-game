@@ -22,6 +22,20 @@ void InitObjectList(ObjectList* objList) {
 	objList->tail = NULL;
 	objList->count = 0;
 	objList->score = 0;
+
+	objList->textures[ASTEROID_TYPE] = LoadTexture("images/meteor.png");
+	objList->textures[PLAYER_TYPE] = LoadTexture("images/spaceship.png");
+	objList->textures[LASER_TYPE] = LoadTexture("images/laser.png");
+
+	objList->sounds[LASER_TYPE] = LoadSound("audio/laser.wav");
+	objList->sounds[ASTEROID_TYPE] = LoadSound("audio/explosion.wav");
+
+	FilePathList frames = LoadDirectoryFiles("images/explosion/");
+	objList->animationSize = frames.count;
+	for (int i = 0; i < frames.count; i++) {
+		objList->animation[i] = LoadTexture(frames.paths[i]);
+	}
+	
 }
 
 void RegisterObject(ObjectList* objList, Object* obj) {
@@ -87,6 +101,15 @@ void CleanObjects(ObjectList* objList) {
 		obj->Clean(obj);
 		obj = obj->next;		
 	}
+	UnloadTexture(objList->textures[LASER_TYPE]);
+	UnloadTexture(objList->textures[ASTEROID_TYPE]);
+	UnloadTexture(objList->textures[PLAYER_TYPE]);
+	for (int i = 0; i < objList->animationSize; i++) {
+		UnloadTexture(objList->animation[i]);
+	}
+
+	UnloadSound(objList->sounds[LASER_TYPE]);
+	UnloadSound(objList->sounds[ASTEROID_TYPE]);
 }
 
 // TODO: change to disabl/exenable
@@ -106,23 +129,13 @@ void HideHitboxObjects(ObjectList* objList) {
 	}
 }
 
-// void InitSprite(SpriteList* sl, Sprite* s, Vector2 pos, const char* texturePath, 
-// 	float rotation, float scale, Color tint, bool visible) {
-// 	s->pos = pos;
-// 	s->texture = LoadTexture(texturePath);
-// 	s->rotation = rotation;
-// 	s->scale = scale;
-// 	s->tint = tint;
-// 	s->visible = visible;
-// 	RegisterSprite(sl, s);
-// }
 
 void UpdatePlayer(ObjectList* objList, Object* player, float dt) {
 	if (IsKeyPressed(KEY_SPACE)) {
 		Vector2 laserPos = player->position;
 		laserPos = Vector2Add(
 			laserPos, 
-			(Vector2){player->texture.width/2-5, 0}
+			(Vector2){player->texture->width/2-5, 0}
 		);
 		InitLaser(
 			objList,
@@ -131,21 +144,21 @@ void UpdatePlayer(ObjectList* objList, Object* player, float dt) {
 		if (objList->tail) {
 			objList->tail->hitboxVisible = player->hitboxVisible;
 		}
-		PlaySound(objList->tail->soundEffect);
+		PlaySound(*objList->tail->sound);
 	}
 	player->direction.x =  (int) IsKeyDown(KEY_D) - (int) IsKeyDown(KEY_A);
 	player->direction.y =  (int) IsKeyDown(KEY_S) - (int) IsKeyDown(KEY_W);
 	player->direction = Vector2Normalize(player->direction);
 	player->position = Vector2Add(player->position, Vector2Scale(player->direction, dt*player->speed));	
-	player->position.x = min(max(0, player->position.x), SCREEN_WIDTH - player->texture.width);
-	player->position.y = min(max(0, player->position.y), SCREEN_HEIGHT - player->texture.height);
+	player->position.x = min(max(0, player->position.x), SCREEN_WIDTH - player->texture->width);
+	player->position.y = min(max(0, player->position.y), SCREEN_HEIGHT - player->texture->height);
 	player->hitbox.x = player->position.x;
 	player->hitbox.y = player->position.y;
 }
 
 void DrawPlayer(Object* player) {
 	DrawTextureEx(
-		player->texture,
+		*(player->texture),
 		player->position,
 		player->rotation,
 		player->scale,
@@ -157,7 +170,6 @@ void DrawPlayer(Object* player) {
 }
 
 void CleanPlayer(Object* player) {
-	UnloadTexture(player->texture);
 	free(player);
 }
 
@@ -171,17 +183,17 @@ void UpdateLaser(ObjectList* objList, Object* laser, float dt) {
 	laser->hitbox.x = laser->position.x;
 	laser->hitbox.y = laser->position.y;
 
-	if (laser->position.x < -laser->texture.width || 
-		laser->position.x > SCREEN_WIDTH+laser->texture.width || 
-		laser->position.y < -laser->texture.height
+	if (laser->position.x < -laser->texture->width || 
+		laser->position.x > SCREEN_WIDTH+laser->texture->width || 
+		laser->position.y < -laser->texture->height
 	) {
-		UnregisterObject(objList, laser);
+		laser->destroied=true;
 	}
 }
 
 void DrawLaser(Object* laser) {
 	DrawTextureEx(
-		laser->texture,
+		*laser->texture,
 		laser->position,
 		laser->rotation,
 		laser->scale,
@@ -193,8 +205,6 @@ void DrawLaser(Object* laser) {
 }
 
 void CleanLaser(Object* laser) {
-	UnloadTexture(laser->texture);
-	UnloadSound(laser->soundEffect);
 	free(laser);
 }
 
@@ -213,11 +223,12 @@ void UpdateAsteriod(ObjectList* objList, Object* asteroid, float dt) {
 	asteroid->hitbox.x = asteroid->position.x;
 	asteroid->hitbox.y = asteroid->position.y;
 
-	if (asteroid->position.x < -asteroid->texture.width || 
-		asteroid->position.x > SCREEN_WIDTH+asteroid->texture.width || 
+	if (asteroid->position.x < -asteroid->texture->width || 
+		asteroid->position.x > SCREEN_WIDTH+asteroid->texture->width || 
 		asteroid->position.y > SCREEN_HEIGHT
 	) {
-		UnregisterObject(objList, asteroid);
+		asteroid->animation->finished=true;
+		asteroid->destroied=true;
 	}
 }
 
@@ -232,7 +243,7 @@ void DrawAsteriod(Object* asteroid) {
 		);
 	} else {
 		DrawTextureEx(
-			asteroid->texture,
+			*asteroid->texture,
 			asteroid->position,
 			asteroid->rotation,
 			asteroid->scale,
@@ -245,15 +256,13 @@ void DrawAsteriod(Object* asteroid) {
 }
 
 void CleanAsteriod(Object* asteroid) {
-	UnloadTexture(asteroid->texture);
 	CleanAnimation(asteroid->animation);
-	UnloadSound(asteroid->soundEffect);
 	free(asteroid);
 }
 
 void InitPlayer(ObjectList* objList, Vector2 startPos, float speed) {
 	Object* obj = (Object*) malloc(sizeof(Object));
-	Texture2D texture = LoadTexture("images/spaceship.png");
+	Texture2D* texture = &objList->textures[PLAYER_TYPE];
 	*obj = (Object) {
 		.type = PLAYER_TYPE,
 		.position = startPos,
@@ -270,19 +279,20 @@ void InitPlayer(ObjectList* objList, Vector2 startPos, float speed) {
 		.Update = UpdatePlayer,
 		.Draw = DrawPlayer,
 		.Clean = CleanPlayer,
-		.hitbox = (Rectangle){startPos.x, startPos.y, texture.width, texture.height},
+		.hitbox = (Rectangle){startPos.x, startPos.y, texture->width, texture->height},
 		.hitboxVisible = false,
 		.destroied = false,
 		.animation = NULL,
-		.animationActive = false
+		.animationActive = false,
+		.sound = NULL
 	};
 	RegisterObject(objList, obj);	
 }
 
 void InitLaser(ObjectList* objList, Vector2 startPos) {
 	Object* obj = (Object*) malloc(sizeof(Object));
-	Texture2D texture = LoadTexture("images/laser.png");
-	Sound sound = LoadSound("audio/laser.wav");
+	Texture2D* texture = &objList->textures[LASER_TYPE];
+	Sound* sound = &objList->sounds[LASER_TYPE];
 	*obj = (Object) {
 		.type = LASER_TYPE,
 		.position = startPos,
@@ -299,12 +309,12 @@ void InitLaser(ObjectList* objList, Vector2 startPos) {
 		.Update = UpdateLaser,
 		.Draw = DrawLaser,
 		.Clean = CleanLaser,
-		.hitbox = (Rectangle){startPos.x, startPos.y, texture.width, texture.height},
+		.hitbox = (Rectangle){startPos.x, startPos.y, texture->width, texture->height},
 		.hitboxVisible = false,
 		.destroied = false,
 		.animation = NULL,
 		.animationActive = false,
-		.soundEffect = sound
+		.sound = sound
 	};
 	RegisterObject(objList, obj);	
 }
@@ -312,16 +322,15 @@ void InitLaser(ObjectList* objList, Vector2 startPos) {
 void InitAsteroid(ObjectList* objList) {
 	Object* obj = (Object*) malloc(sizeof(Object));
 	float speed = ASTEROID_SPEED_RANGE[0] + (ASTEROID_SPEED_RANGE[1] - ASTEROID_SPEED_RANGE[0]) * (float) rand() / RAND_MAX;
-	Texture2D texture =  LoadTexture("images/meteor.png");
-	Vector2 startPos = (Vector2) {(texture.width + rand()) % (SCREEN_WIDTH-texture.width), -texture.height};
+	Texture2D* texture = &objList->textures[ASTEROID_TYPE];
+	Vector2 startPos = (Vector2) {(texture->width + rand()) % (SCREEN_WIDTH-texture->width), -texture->height};
 	float angle = (((float) rand() / (RAND_MAX / 2)) - 1) * PI / 5;
 	Vector2 direction = Vector2Rotate((Vector2) {0, 1}, angle);
 
-	// Initialize Asteroid destoried animation
-	Animation* explosion = (Animation*) malloc(sizeof(Animation));
-	InitAnimation(explosion, "images/explosion", 0.01, false);
+	Animation* animation = malloc(sizeof(Animation));
+	InitAnimation(animation, objList->animation, objList->animationSize, 0.01, false);
+	Sound* sound = &objList->sounds[ASTEROID_TYPE];
 
-	Sound sound = LoadSound("audio/explosion.wav");
 	*obj = (Object) {
 		.type = ASTEROID_TYPE,
 		.position = startPos,
@@ -338,12 +347,12 @@ void InitAsteroid(ObjectList* objList) {
 		.Update = UpdateAsteriod,
 		.Draw = DrawAsteriod,
 		.Clean = CleanAsteriod,
-		.hitbox = (Rectangle){startPos.x, startPos.y, texture.width, texture.height},
+		.hitbox = (Rectangle){startPos.x, startPos.y, texture->width, texture->height},
 		.hitboxVisible = false,
 		.destroied = false,
-		.animation = explosion,
+		.animation = animation,
 		.animationActive = false,
-		.soundEffect = sound
+		.sound = sound
 	};
 	RegisterObject(objList, obj);	
 	

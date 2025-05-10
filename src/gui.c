@@ -33,7 +33,13 @@ void DrawGameOver(Game* game) {
 
 void DrawStars(Game* game) {
     for (int i=0; i<STARS_NUMBER; i++) {
-        DrawPoly(game->stars[i], 5, 10, 1, WHITE);
+        DrawTextureEx(
+            game->starTexture, 
+            game->stars[i].position,
+            game->stars[i].rotation,
+            game->stars[i].scale,
+            WHITE
+        );
     }
 }
 
