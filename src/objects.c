@@ -314,6 +314,8 @@ void InitAsteroid(ObjectList* objList) {
 	float speed = ASTEROID_SPEED_RANGE[0] + (ASTEROID_SPEED_RANGE[1] - ASTEROID_SPEED_RANGE[0]) * (float) rand() / RAND_MAX;
 	Texture2D texture =  LoadTexture("images/meteor.png");
 	Vector2 startPos = (Vector2) {(texture.width + rand()) % (SCREEN_WIDTH-texture.width), -texture.height};
+	float angle = (((float) rand() / (RAND_MAX / 2)) - 1) * PI / 5;
+	Vector2 direction = Vector2Rotate((Vector2) {0, 1}, angle);
 
 	// Initialize Asteroid destoried animation
 	Animation* explosion = (Animation*) malloc(sizeof(Animation));
@@ -323,7 +325,7 @@ void InitAsteroid(ObjectList* objList) {
 	*obj = (Object) {
 		.type = ASTEROID_TYPE,
 		.position = startPos,
-		.direction = (Vector2){0, 1},
+		.direction = direction,
 		.speed = speed,
 		.active = true,
 		.texture = texture,
